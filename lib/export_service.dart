@@ -1,26 +1,47 @@
 import 'dart:io';
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_session.dart';
+import 'package:ffmpeg_kit_flutter_new/statistics.dart';
+import 'package:video_editor/video_editor.dart';
 
 class ExportService {
-  static Future<FFmpegSession> runFFmpegCommand(
-    String command, {
-    void Function(FFmpegSession)? onComplete,
-    void Function(String)? onLog,
+  static Future<void> runFFmpegCommand(
+    FFmpegVideoEditorExecute execute, {
+    required void Function(File file) onCompleted,
+    void Function(Object, StackTrace)? onError,
+    void Function(Statistics)? onProgress,
   }) async {
-    final session = await FFmpegKit.execute(command);
-    final returnCode = await session.getReturnCode();
-
-    if (ReturnCode.isSuccess(returnCode)) {
-      if (onComplete != null) {
-        onComplete(session);
-      }
-    } else {
-      print('FFmpeg failed with return code: $returnCode');
+    if (onProgress != null) {
+      FFmpegKitConfig.enableStatisticsCallback(onProgress);
     }
 
-    return session;
+    await FFmpegKit.executeAsync(
+      execute.command,
+      (session) async {
+        final state = FFmpegKitConfig.sessionStateToString(
+          await session.getState(),
+        );
+        final returnCode = await session.getReturnCode();
+
+        if (ReturnCode.isSuccess(returnCode)) {
+          onCompleted(File(execute.outputPath));
+        } else {
+          if (onError != null) {
+            onError(
+              Exception('FFmpeg failed with state :: $state and return code :: $returnCode'),
+              StackTrace.current,
+            );
+          }
+        }
+      },
+      null,
+      (statistics) {
+        if (onProgress != null) {
+          onProgress(statistics);
+        }
+      },
+    );
   }
 
   static void dispose() {
