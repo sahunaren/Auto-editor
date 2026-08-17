@@ -14,7 +14,7 @@ void main() => runApp(
         theme: ThemeData(
           primarySwatch: Colors.grey,
           brightness: Brightness.dark,
-          tabBarTheme: const TabBarTheme(
+          tabBarTheme: const TabBarThemeData(
             indicator: UnderlineTabIndicator(
               borderSide: BorderSide(color: Colors.white),
             ),
@@ -98,7 +98,6 @@ class _VideoEditorState extends State<VideoEditor> {
         .initialize(aspectRatio: 9 / 16)
         .then((_) => setState(() {}))
         .catchError((error) {
-      // handle minumum duration bigger than video duration error
       Navigator.pop(context);
     }, test: (e) => e is VideoMinDurationError);
   }
@@ -126,19 +125,19 @@ class _VideoEditorState extends State<VideoEditor> {
 
     final config = VideoFFmpegVideoEditorConfig(
       _controller,
-      // format: VideoExportFormat.gif,
-      // commandBuilder: (config, videoPath, outputPath) {
-      //   final List<String> filters = config.getExportFilters();
-      //   filters.add('hflip'); // add horizontal flip
-
-      //   return '-i $videoPath ${config.filtersCmd(filters)} -preset ultrafast $outputPath';
-      // },
     );
 
+    final executeConfig = await config.getExecuteConfig();
+    if (executeConfig == null) {
+      _showErrorSnackBar("Error on export initialization.");
+      _isExporting.value = false;
+      return;
+    }
+
     await ExportService.runFFmpegCommand(
-      await config.getExecuteConfig(),
+      executeConfig,
       onProgress: (stats) {
-        _exportingProgress.value = config.getFFmpegProgress(stats.getTime());
+        _exportingProgress.value = config.getFFmpegProgress(stats.getTime() ?? 0);
       },
       onError: (e, s) => _showErrorSnackBar("Error on export video :("),
       onCompleted: (file) {
