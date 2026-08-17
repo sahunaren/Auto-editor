@@ -6,13 +6,13 @@ plugins {
 
 android {
     namespace = "com.example.auto_editor"
-    compileSdkVersion 34
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.example.auto_editor"
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdkVersion 24
+        targetSdk = 36
         versionCode 1
         versionName "1.0"
     }
