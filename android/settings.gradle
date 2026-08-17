@@ -25,10 +25,10 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        google()
-        mavenCentral()
+        google() // यह सबसे ऊपर होना चाहिए
+        mavenCentral() // यह दूसरे नंबर पर
         maven { url 'https://jitpack.io' }
-        maven { url 'https://maven.arthenica.com' }
+        maven { url 'https://maven.arthenica.com' } // यह सबसे नीचे
     }
 }
 
