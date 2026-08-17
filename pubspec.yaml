@@ -11,10 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  video_editor: ^3.0.0
 
-  video_editor:
-    path: ../
-
+    
   fraction: ^4.1.4
   image_picker: ^0.8.9
   path: ^1.8.2
